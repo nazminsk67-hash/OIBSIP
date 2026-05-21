@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import { updateOrderStatus } from '../redux/orderSlice'
 import { selectToken, selectIsAuthenticated } from '../redux/authSlice'
 
-const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+const SOCKET_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'https://pizza-delivery-zjn3.onrender.com'
 
 export const useSocket = () => {
   const dispatch        = useDispatch()

@@ -2,7 +2,7 @@ import 'dotenv/config'
 import express        from 'express'
 import { createServer } from 'http'
 import cors           from 'cors'
-//import connectDB      from './config/db.js'
+import connectDB      from './config/db.js'
 import { initSocket } from './utils/socket.js'
 import authRoutes     from './routes/auth.js'
 import pizzaRoutes    from './routes/pizza.js'
@@ -10,7 +10,7 @@ import orderRoutes    from './routes/orders.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 
 // ── Connect to MongoDB ───────────────────────────────────────────
-//await connectDB()
+await connectDB()
 
 const app        = express()
 const httpServer = createServer(app)

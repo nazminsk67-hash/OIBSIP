@@ -3,7 +3,7 @@ import { store } from '../redux/store'
 import { logout } from '../redux/authSlice'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://pizza-delivery-zjn3.onrender.com/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 10000,
 })
