@@ -1,0 +1,16 @@
+{
+  "name": "pizza-delivery",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "start": "node backend/server.js",
+    "postinstall": "echo Workspaces installed"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
