@@ -1,0 +1,27 @@
+import { Router } from 'express'
+import {
+  createRazorpayOrder,
+  placeOrder,
+  getMyOrders,
+  getOrderById,
+  getAllOrders,
+  updateOrderStatus,
+} from '../controllers/orderController.js'
+import { protect, adminOnly } from '../middleware/auth.js'
+
+const router = Router()
+
+// All order routes require authentication
+router.use(protect)
+
+// User routes
+router.post('/create-payment',  createRazorpayOrder)
+router.post('/place',           placeOrder)
+router.get( '/my-orders',       getMyOrders)
+router.get( '/:id',             getOrderById)
+
+// Admin-only routes
+router.get(   '/',              adminOnly, getAllOrders)
+router.patch( '/:id/status',   adminOnly, updateOrderStatus)
+
+export default router
