@@ -19,9 +19,9 @@ export const orderApi = {
 
   // Admin: get all orders
   getAllOrders: () =>
-    api.get('/orders'),
+    api.get('/orders/admin/all'),
 
   // Admin: update order status
   updateOrderStatus: (orderId, status) =>
-    api.patch(`/orders/${orderId}/status`, { status }),
+    api.put(`/orders/admin/${orderId}/status`, { status }),
 }

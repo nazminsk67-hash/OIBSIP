@@ -1,6 +1,6 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import { orderApi } from '../api/orderApi'
 
-// Order status enum (matches backend)
 export const ORDER_STATUS = {
   RECEIVED:  'Order Received',
   KITCHEN:   'In the Kitchen',
@@ -8,9 +8,57 @@ export const ORDER_STATUS = {
   DELIVERED: 'Delivered',
 }
 
+export const fetchMyOrders = createAsyncThunk(
+  'order/fetchMyOrders',
+  async (_, thunkAPI) => {
+    try {
+      const response = await orderApi.getMyOrders()
+      return response.data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
+    }
+  }
+)
+
+export const placeOrder = createAsyncThunk(
+  'order/placeOrder',
+  async (payload, thunkAPI) => {
+    try {
+      const response = await orderApi.placeOrder(payload)
+      return response.data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
+    }
+  }
+)
+
+export const fetchAllOrders = createAsyncThunk(
+  'order/fetchAllOrders',
+  async (_, thunkAPI) => {
+    try {
+      const response = await orderApi.getAllOrders()
+      return response.data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
+    }
+  }
+)
+
+export const updateOrderStatusAsync = createAsyncThunk(
+  'order/updateOrderStatusAsync',
+  async ({ id, status }, thunkAPI) => {
+    try {
+      const response = await orderApi.updateOrderStatus(id, status)
+      return response.data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
+    }
+  }
+)
+
 const initialState = {
-  orders:       [],      // all orders (admin view)
-  currentOrder: null,    // active user order being tracked
+  orders:       [],
+  currentOrder: null,
   loading:      false,
   error:        null,
 }
@@ -19,56 +67,88 @@ const orderSlice = createSlice({
   name: 'order',
   initialState,
   reducers: {
-    setOrders: (state, action) => {
-      state.orders  = action.payload
-      state.loading = false
-    },
-    addOrder: (state, action) => {
-      state.orders.unshift(action.payload)
-      state.currentOrder = action.payload
-    },
     setCurrentOrder: (state, action) => {
       state.currentOrder = action.payload
     },
-    // Called when socket emits a status update
     updateOrderStatus: (state, action) => {
       const { orderId, status } = action.payload
-
-      // Update in the orders list
       const idx = state.orders.findIndex(o => o._id === orderId)
       if (idx !== -1) state.orders[idx].status = status
-
-      // Update the tracked order
       if (state.currentOrder?._id === orderId) {
         state.currentOrder.status = status
       }
-    },
-    setOrderLoading: (state, action) => {
-      state.loading = action.payload
-    },
-    setOrderError: (state, action) => {
-      state.error   = action.payload
-      state.loading = false
     },
     clearCurrentOrder: (state) => {
       state.currentOrder = null
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchMyOrders.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchMyOrders.fulfilled, (state, action) => {
+        state.orders = action.payload
+        state.loading = false
+      })
+      .addCase(fetchMyOrders.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(placeOrder.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(placeOrder.fulfilled, (state, action) => {
+        state.orders.unshift(action.payload)
+        state.currentOrder = action.payload
+        state.loading = false
+      })
+      .addCase(placeOrder.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(fetchAllOrders.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchAllOrders.fulfilled, (state, action) => {
+        state.orders = action.payload
+        state.loading = false
+      })
+      .addCase(fetchAllOrders.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+      .addCase(updateOrderStatusAsync.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(updateOrderStatusAsync.fulfilled, (state, action) => {
+        const idx = state.orders.findIndex(o => o._id === action.payload._id)
+        if (idx !== -1) state.orders[idx] = action.payload
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload
+        }
+        state.loading = false
+      })
+      .addCase(updateOrderStatusAsync.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+  },
 })
 
 export const {
-  setOrders,
-  addOrder,
   setCurrentOrder,
   updateOrderStatus,
-  setOrderLoading,
-  setOrderError,
   clearCurrentOrder,
 } = orderSlice.actions
 
-// Selectors
 export const selectOrders       = (state) => state.order.orders
 export const selectCurrentOrder = (state) => state.order.currentOrder
 export const selectOrderLoading = (state) => state.order.loading
+export const selectOrderError   = (state) => state.order.error
 
 export default orderSlice.reducer
