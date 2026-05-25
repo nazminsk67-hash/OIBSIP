@@ -12,6 +12,8 @@ const initialState = {
 
   // Computed
   totalPrice: 0,
+  // Catalog cart items
+  items: [], // [{ id, pizzaId, name, size, sizePrice, toppings:[], quantity, lineTotal }]
 }
 
 const calcTotal = (state) => {
@@ -52,10 +54,42 @@ const cartSlice = createSlice({
       calcTotal(state)
     },
     resetCart: () => initialState,
+    // Catalog cart reducers
+    addItem: (state, action) => {
+      const item = action.payload
+      // try to merge by pizzaId+size+ toppings key
+      const key = JSON.stringify({ pizzaId: item.pizzaId, size: item.size, toppings: (item.toppings||[]).map(t=>t.ingredientId).sort() })
+      const existing = state.items.find(i => i._key === key)
+      if (existing) {
+        existing.quantity += item.quantity || 1
+        existing.lineTotal = existing.quantity * (existing.sizePrice + (existing.toppings||[]).reduce((s,t)=>s+(t.extraPrice||0),0))
+      } else {
+        const newItem = {
+          ...item,
+          quantity: item.quantity || 1,
+          lineTotal: (item.sizePrice || 0) * (item.quantity || 1) + ((item.toppings||[]).reduce((s,t)=>s+(t.extraPrice||0),0) * (item.quantity || 1)),
+          _key: key,
+        }
+        state.items.push(newItem)
+      }
+    },
+    removeItem: (state, action) => {
+      const key = action.payload
+      state.items = state.items.filter(i => i._key !== key)
+    },
+    updateItemQuantity: (state, action) => {
+      const { key, quantity } = action.payload
+      const item = state.items.find(i => i._key === key)
+      if (item) {
+        item.quantity = Math.max(1, quantity)
+        item.lineTotal = item.quantity * (item.sizePrice + (item.toppings||[]).reduce((s,t)=>s+(t.extraPrice||0),0))
+      }
+    },
+    clearItems: (state) => { state.items = [] },
   },
 })
 
-export const { setBase, setSauce, setCheese, toggleVeggie, setQuantity, resetCart } = cartSlice.actions
+export const { setBase, setSauce, setCheese, toggleVeggie, setQuantity, resetCart, addItem, removeItem, updateItemQuantity, clearItems } = cartSlice.actions
 
 // Selectors
 export const selectCartBase      = (state) => state.cart.base

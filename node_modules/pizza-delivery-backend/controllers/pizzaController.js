@@ -10,6 +10,51 @@ export const getAllPizzas = async (_req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// ── GET /api/pizza/:id  – single pizza details ─────────────────
+export const getPizzaById = async (req, res, next) => {
+  try {
+    const pizza = await Pizza.findById(req.params.id)
+    if (!pizza) return res.status(404).json({ message: 'Pizza not found' })
+    res.json(pizza)
+  } catch (err) { next(err) }
+}
+
+// ── GET /api/pizza/category/:cat  – pizzas by category ────────
+export const getPizzasByCategory = async (req, res, next) => {
+  try {
+    const { cat } = req.params
+    const pizzas = await Pizza.find({ category: cat, isAvailable: true }).sort({ createdAt: -1 })
+    res.json(pizzas)
+  } catch (err) { next(err) }
+}
+
+// ── POST /api/pizza  (admin) – create pizza ───────────────────
+export const createPizza = async (req, res, next) => {
+  try {
+    const payload = req.body
+    const pizza = await Pizza.create(payload)
+    res.status(201).json(pizza)
+  } catch (err) { next(err) }
+}
+
+// ── PUT /api/pizza/:id  (admin) – update pizza ───────────────
+export const updatePizza = async (req, res, next) => {
+  try {
+    const pizza = await Pizza.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    if (!pizza) return res.status(404).json({ message: 'Pizza not found' })
+    res.json(pizza)
+  } catch (err) { next(err) }
+}
+
+// ── DELETE /api/pizza/:id  (admin) – delete pizza ────────────
+export const deletePizza = async (req, res, next) => {
+  try {
+    const pizza = await Pizza.findByIdAndDelete(req.params.id)
+    if (!pizza) return res.status(404).json({ message: 'Pizza not found' })
+    res.json({ message: 'Pizza deleted' })
+  } catch (err) { next(err) }
+}
+
 // ── GET /api/pizza/builder-options  – base, sauce, cheese, veggies ─
 export const getBuilderOptions = async (_req, res, next) => {
   try {

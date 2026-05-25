@@ -53,22 +53,18 @@ export const placeOrder = async (req, res, next) => {
   try {
     const {
       base, sauce, cheese, veggies = [], quantity = 1,
+      pizzas = [],
       totalPrice,
       razorpayOrderId, razorpayPaymentId,
     } = req.body
 
-    if (!base || !sauce || !cheese) {
-      return res.status(400).json({ message: 'Base, sauce, and cheese are required' })
+    if (!totalPrice || totalPrice <= 0) {
+      return res.status(400).json({ message: 'Invalid total price' })
     }
 
-    // Create the order
-    const order = await Order.create({
-      user:       req.user._id,
-      base,
-      sauce,
-      cheese,
-      veggies,
-      quantity,
+    // Create the order object data
+    const orderData = {
+      user: req.user._id,
       totalPrice,
       payment: {
         razorpayOrderId,
@@ -76,27 +72,89 @@ export const placeOrder = async (req, res, next) => {
         status: razorpayPaymentId ? 'paid' : 'pending',
       },
       status: ORDER_STATUS.RECEIVED,
-    })
+    }
 
-    // ── Deduct stock ──────────────────────────────────────────────
-    const ingredientIds = [
-      base.ingredientId,
-      sauce.ingredientId,
-      cheese.ingredientId,
-      ...veggies.map(v => v.ingredientId),
-    ].filter(Boolean)
+    // Attach either catalog pizzas or builder fields
+    if (pizzas && pizzas.length) orderData.pizzas = pizzas
+    else {
+      if (!base || !sauce || !cheese) {
+        return res.status(400).json({ message: 'Base, sauce, and cheese are required' })
+      }
+      orderData.base = base
+      orderData.sauce = sauce
+      orderData.cheese = cheese
+      orderData.veggies = veggies
+      orderData.quantity = quantity
+    }
 
-    const ingredients = await Ingredient.find({ _id: { $in: ingredientIds } })
+    // Create the order
+    const order = await Order.create(orderData)
 
-    for (const ing of ingredients) {
-      ing.stock = Math.max(0, ing.stock - quantity)
-      await ing.save()
+    // ── Deduct stock for involved ingredients ─────────────────────
+    let ingredientIds = []
 
-      // Alert if below threshold
-      if (ing.stock < ing.alertThreshold) {
-        sendLowStockAlert(ing).catch(err =>
-          console.error('Low-stock email error:', err.message)
-        )
+    if (orderData.pizzas && orderData.pizzas.length) {
+      // collect ingredient ids from pizzas toppings and pizza inventoryIngredients
+      for (const p of orderData.pizzas) {
+        if (Array.isArray(p.toppings)) {
+          ingredientIds.push(...p.toppings.map(t => t.ingredientId).filter(Boolean))
+        }
+        if (p.pizza) {
+          // try to load pizza to read its inventoryIngredients
+          try {
+            // lazy require to avoid circular deps
+            const Pizza = (await import('../models/Pizza.js')).default
+            const pizzaDoc = await Pizza.findById(p.pizza)
+            if (pizzaDoc && pizzaDoc.inventoryIngredients && pizzaDoc.inventoryIngredients.length) {
+              ingredientIds.push(...pizzaDoc.inventoryIngredients.map(id => id.toString()))
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+      // multiply by quantities
+      // we'll decrement each ingredient by the sum of pizza quantities
+      const qtyMap = {}
+      for (const p of orderData.pizzas) {
+        const q = p.quantity || 1
+        if (p.toppings) {
+          for (const t of p.toppings) {
+            if (!t.ingredientId) continue
+            qtyMap[t.ingredientId] = (qtyMap[t.ingredientId] || 0) + q
+          }
+        }
+      }
+      const ids = Object.keys(qtyMap)
+      const ingredients = await Ingredient.find({ _id: { $in: ids } })
+      for (const ing of ingredients) {
+        const dec = qtyMap[ing._id.toString()] || 0
+        ing.stock = Math.max(0, ing.stock - dec)
+        await ing.save()
+        if (ing.stock < ing.alertThreshold) {
+          sendLowStockAlert(ing).catch(err => console.error('Low-stock email error:', err.message))
+        }
+      }
+    } else {
+      ingredientIds = [
+        base?.ingredientId,
+        sauce?.ingredientId,
+        cheese?.ingredientId,
+        ...veggies.map(v => v.ingredientId),
+      ].filter(Boolean)
+
+      const ingredients = await Ingredient.find({ _id: { $in: ingredientIds } })
+
+      for (const ing of ingredients) {
+        ing.stock = Math.max(0, ing.stock - quantity)
+        await ing.save()
+
+        // Alert if below threshold
+        if (ing.stock < ing.alertThreshold) {
+          sendLowStockAlert(ing).catch(err =>
+            console.error('Low-stock email error:', err.message)
+          )
+        }
       }
     }
 

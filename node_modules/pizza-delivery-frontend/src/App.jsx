@@ -19,6 +19,8 @@ import PizzaBuilder from './pages/user/PizzaBuilder'
 import Cart        from './pages/user/Cart'
 import Checkout    from './pages/user/Checkout'
 import OrderStatus from './pages/user/OrderStatus'
+import PizzaList    from './pages/pizza/PizzaList'
+import PizzaDetails from './pages/pizza/PizzaDetails'
 
 // Admin pages
 import AdminLogin     from './pages/admin/AdminLogin'
@@ -52,6 +54,8 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/dashboard"   element={<Dashboard />} />
         <Route path="/build"       element={<PizzaBuilder />} />
+        <Route path="/pizzas"      element={<PizzaList />} />
+        <Route path="/pizza/:id"    element={<PizzaDetails />} />
         <Route path="/cart"        element={<Cart />} />
         <Route path="/checkout"    element={<Checkout />} />
         <Route path="/my-orders"   element={<OrderStatus />} />

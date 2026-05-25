@@ -16,7 +16,25 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    // ── Pizza configuration ─────────────────────────────────────
+    // ── Catalog pizzas (array) ───────────────────────────────────
+    pizzas: [
+      {
+        pizza: { type: mongoose.Schema.Types.ObjectId, ref: 'Pizza' },
+        name: String,
+        size: String,
+        sizePrice: Number,
+        toppings: [
+          {
+            ingredientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient' },
+            name: String,
+            extraPrice: Number,
+          },
+        ],
+        quantity: { type: Number, default: 1, min: 1 },
+      },
+    ],
+
+    // ── Legacy / builder-style pizza fields (kept for compatibility)
     base: {
       ingredientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient' },
       name:  String,
