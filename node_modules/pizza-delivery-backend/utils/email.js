@@ -1,7 +1,11 @@
 import nodemailer from 'nodemailer'
 
-const createTransporter = () =>
-  nodemailer.createTransport({
+const createTransporter = () => {
+  console.log(process.env.SMTP_HOST)
+  console.log(process.env.SMTP_PORT)
+  console.log(process.env.SMTP_USER)
+
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
     auth: {
@@ -9,6 +13,7 @@ const createTransporter = () =>
       pass: process.env.SMTP_PASS,
     },
   })
+}
 
 // ── Generic send ─────────────────────────────────────────────────
 export const sendEmail = async ({ to, subject, html }) => {

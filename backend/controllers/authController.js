@@ -23,7 +23,7 @@ export const register = async (req, res, next) => {
     const token = user.createEmailVerificationToken()
     await user.save({ validateBeforeSave: false })
 
-    await sendVerificationEmail(user, token)
+    //await sendVerificationEmail(user, token)
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to verify your account.',
@@ -101,20 +101,29 @@ export const verifyEmail = async (req, res, next) => {
 export const forgotPassword = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email })
+
     if (!user) {
-      // Don't reveal whether email exists
-      return res.json({ message: 'If that email is registered, a reset link has been sent.' })
+      return res.json({
+        message: 'If that email is registered, a reset link has been sent.',
+      })
     }
 
     const token = user.createPasswordResetToken()
+
     await user.save({ validateBeforeSave: false })
 
-    await sendPasswordResetEmail(user, token)
+    console.log('\n========== RESET LINK ==========')
+    console.log(`${process.env.CLIENT_URL}/reset-password/${token}`)
+    console.log('================================\n')
 
-    res.json({ message: 'If that email is registered, a reset link has been sent.' })
-  } catch (err) { next(err) }
+    return res.json({
+      message: 'Reset link generated successfully.',
+    })
+  } catch (err) {
+    console.log(err)
+    next(err)
+  }
 }
-
 // ── Reset Password ────────────────────────────────────────────────
 export const resetPassword = async (req, res, next) => {
   try {
