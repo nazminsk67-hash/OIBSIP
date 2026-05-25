@@ -38,6 +38,6 @@ app.use(notFound)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 5000
-httpServer.listen(PORT, () => {
-  console.log(`🍕  Pizza backend running on http://localhost:${PORT}`)
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(`🍕 Pizza backend running on port ${PORT}`)
 })
