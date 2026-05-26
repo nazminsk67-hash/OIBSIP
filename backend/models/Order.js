@@ -63,23 +63,6 @@ const orderSchema = new mongoose.Schema(
       min:     1,
     },
 
-    // ── Pricing ─────────────────────────────────────────────────
-    pizzas: [
-      {
-        pizza: { type: mongoose.Schema.Types.ObjectId, ref: 'Pizza' },
-        name: String,
-        size: String,
-        sizePrice: Number,
-        toppings: [
-          {
-            ingredientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Ingredient' },
-            name: String,
-            extraPrice: Number,
-          },
-        ],
-        quantity: { type: Number, default: 1, min: 1 },
-      },
-    ],
     address: {
       type: String,
       required: true,

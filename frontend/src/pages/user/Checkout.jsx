@@ -5,6 +5,7 @@ import { placeOrder } from '../../redux/orderSlice'
 import { clearItems } from '../../redux/cartSlice'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector'
 
 export default function Checkout() {
   const items = useSelector((state) => state.cart.items)
@@ -22,6 +23,7 @@ export default function Checkout() {
     setErrorMessage('')
     if (!address.trim() || !phone.trim()) {
       setErrorMessage('Please provide both delivery address and phone number.')
+      toast.error('Please fill in all required fields')
       return
     }
 
@@ -48,11 +50,12 @@ export default function Checkout() {
     try {
       await dispatch(placeOrder(orderPayload)).unwrap()
       dispatch(clearItems())
-      toast.success('Order placed successfully!')
+      toast.success('🍕 Order placed successfully! Check your order status for live updates.')
       navigate('/my-orders')
     } catch (err) {
-      setErrorMessage(err || 'Order failed. Please try again.')
-      toast.error(err || 'Order failed. Please try again.')
+      const errorMsg = err || 'Order failed. Please try again.'
+      setErrorMessage(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -60,7 +63,7 @@ export default function Checkout() {
 
   if (!items.length) {
     return (
-      <div className="p-6 min-h-[60vh]">
+      <div className="p-6 min-h-[60vh] flex items-center justify-center">
         <div className="mx-auto max-w-2xl rounded-[2rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center shadow-sm">
           <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Checkout unavailable</p>
           <h2 className="mt-4 text-3xl font-semibold text-slate-900">Your cart is empty</h2>
@@ -98,52 +101,33 @@ export default function Checkout() {
 
           <div className="grid gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Delivery address</span>
+              <span className="text-sm font-medium text-slate-900">Delivery address *</span>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 outline-none transition focus:border-primary-500 focus:bg-white"
-                rows={4}
+                placeholder="Enter your complete delivery address..."
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-300"
+                rows={3}
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-700">Phone number</span>
+              <span className="text-sm font-medium text-slate-900">Phone number *</span>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="123-456-7890"
-                className="mt-3 w-full rounded-3xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-900 outline-none transition focus:border-primary-500 focus:bg-white"
+                placeholder="e.g., +91 98765 43210"
+                type="tel"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-300"
               />
             </label>
 
-            <div>
-              <p className="text-sm font-medium text-slate-700">Payment method</p>
-              <div className="mt-3 grid gap-3 sm:grid-cols-3">
-                {[
-                  { value: 'cash', label: 'Cash on Delivery' },
-                  { value: 'card', label: 'Card' },
-                  { value: 'upi', label: 'UPI' },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setPaymentMethod(option.value)}
-                    className={`rounded-3xl border px-4 py-3 text-left text-sm transition ${
-                      paymentMethod === option.value
-                        ? 'border-primary-600 bg-primary-600 text-white'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} />
 
             {errorMessage && (
-              <div className="rounded-3xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-                {errorMessage}
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                <p className="font-semibold">Error:</p>
+                <p className="mt-1">{errorMessage}</p>
               </div>
             )}
 
@@ -151,43 +135,58 @@ export default function Checkout() {
               type="button"
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full rounded-full bg-primary-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-3 text-base font-semibold text-white transition hover:from-primary-700 hover:to-primary-800 disabled:cursor-not-allowed disabled:opacity-70 disabled:grayscale"
             >
-              {loading ? 'Placing order...' : 'Place order'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Placing order...
+                </span>
+              ) : (
+                'Place order now'
+              )}
             </button>
           </div>
         </div>
 
-        <aside className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm">
+        <aside className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm h-fit sticky top-6">
           <div className="space-y-5">
             <div>
               <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Order summary</p>
               <h3 className="mt-2 text-2xl font-semibold text-slate-900">Your cart</h3>
             </div>
 
-            <div className="space-y-4 rounded-3xl bg-white p-5 shadow-sm">
+            <div className="max-h-80 space-y-2 rounded-2xl bg-white p-4 overflow-y-auto shadow-sm">
               {items.map((item) => (
-                <div key={item._key} className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-semibold text-slate-900">{item.name}</p>
-                    <p className="text-sm text-slate-500">
+                <div key={item._key} className="flex items-start justify-between gap-3 pb-2 border-b border-slate-100 last:border-b-0">
+                  <div className="flex-1">
+                    <p className="font-semibold text-slate-900 text-sm">{item.name}</p>
+                    <p className="text-xs text-slate-500 mt-1">
                       {item.size} · Qty {item.quantity}
                     </p>
                   </div>
-                  <p className="font-semibold text-slate-900">{formatPrice(item.lineTotal)}</p>
+                  <p className="font-semibold text-slate-900 text-sm whitespace-nowrap">{formatPrice(item.lineTotal)}</p>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-3xl bg-white p-5 shadow-sm">
-              <div className="flex items-center justify-between text-sm text-slate-500">
-                <span>Subtotal</span>
-                <span>{formatPrice(total)}</span>
+            <div className="rounded-2xl bg-white p-4 shadow-sm">
+              <div className="mb-4 pb-4 border-b border-slate-100">
+                <div className="flex items-center justify-between text-sm text-slate-600">
+                  <span>Subtotal</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
               </div>
-              <div className="mt-4 flex items-center justify-between text-lg font-semibold text-slate-900">
-                <span>Total</span>
-                <span>{formatPrice(total)}</span>
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-slate-900">Total</p>
+                <p className="text-2xl font-bold text-primary-600">{formatPrice(total)}</p>
               </div>
+            </div>
+
+            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
+              <p className="text-xs font-medium text-emerald-900">
+                ✓ Your order details will be securely saved and you'll get live updates!
+              </p>
             </div>
           </div>
         </aside>
