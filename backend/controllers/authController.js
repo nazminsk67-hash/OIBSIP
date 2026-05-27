@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import User   from '../models/User.js'
+import Pizza  from '../models/Pizza.js'
 import { createSendToken }          from '../utils/token.js'
 import {
   sendVerificationEmail,
@@ -154,5 +155,82 @@ export const resetPassword = async (req, res, next) => {
 export const getMe = async (req, res, next) => {
   try {
     res.json({ user: req.user })
+  } catch (err) { next(err) }
+}
+
+export const updateProfile = async (req, res, next) => {
+  try {
+    const { name } = req.body
+    if (!name) {
+      return res.status(400).json({ message: 'Name is required' })
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { name },
+      { new: true, runValidators: true }
+    ).select('-password')
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.json({ user })
+  } catch (err) { next(err) }
+}
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current and new passwords are required' })
+    }
+
+    const user = await User.findById(req.user._id).select('+password')
+    if (!user || !(await user.matchPassword(currentPassword))) {
+      return res.status(401).json({ message: 'Current password is incorrect' })
+    }
+
+    user.password = newPassword
+    await user.save()
+
+    res.json({ message: 'Password updated successfully' })
+  } catch (err) { next(err) }
+}
+
+export const getFavorites = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id).populate('favorites')
+    res.json(user?.favorites || [])
+  } catch (err) { next(err) }
+}
+
+export const addFavorite = async (req, res, next) => {
+  try {
+    const pizzaId = req.params.pizzaId
+    const pizza = await Pizza.findById(pizzaId)
+    if (!pizza) {
+      return res.status(404).json({ message: 'Pizza not found' })
+    }
+
+    const user = await User.findById(req.user._id)
+    if (!user.favorites.includes(pizzaId)) {
+      user.favorites.push(pizzaId)
+      await user.save()
+    }
+
+    await user.populate('favorites')
+    res.json(user.favorites)
+  } catch (err) { next(err) }
+}
+
+export const removeFavorite = async (req, res, next) => {
+  try {
+    const pizzaId = req.params.pizzaId
+    const user = await User.findById(req.user._id)
+    user.favorites = user.favorites.filter((item) => item.toString() !== pizzaId)
+    await user.save()
+    await user.populate('favorites')
+    res.json(user.favorites)
   } catch (err) { next(err) }
 }

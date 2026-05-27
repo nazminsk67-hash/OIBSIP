@@ -25,6 +25,18 @@ export const fetchBuilderOptions = createAsyncThunk(
   }
 )
 
+export const fetchAdminPizzas = createAsyncThunk(
+  'pizza/fetchAdminPizzas',
+  async (_, thunkAPI) => {
+    try {
+      const response = await pizzaApi.getAllAdminPizzas()
+      return response.data
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
+    }
+  }
+)
+
 export const createPizza = createAsyncThunk(
   'pizza/createPizza',
   async (payload, thunkAPI) => {
@@ -90,6 +102,19 @@ const pizzaSlice = createSlice({
         state.error = action.payload
       })
 
+      .addCase(fetchAdminPizzas.pending, (state) => {
+        state.loading = true
+        state.error = null
+      })
+      .addCase(fetchAdminPizzas.fulfilled, (state, action) => {
+        state.pizzas = action.payload
+        state.loading = false
+      })
+      .addCase(fetchAdminPizzas.rejected, (state, action) => {
+        state.loading = false
+        state.error = action.payload
+      })
+
       .addCase(fetchBuilderOptions.pending, (state) => {
         state.loading = true
         state.error = null
@@ -150,11 +175,11 @@ const pizzaSlice = createSlice({
 })
 
 export const selectPizzas         = (state) => state.pizza.pizzas
+export const selectPizzaLoading   = (state) => state.pizza.loading
+export const selectPizzaError     = (state) => state.pizza.error
 export const selectBases          = (state) => state.pizza.bases
 export const selectSauces         = (state) => state.pizza.sauces
 export const selectCheeses        = (state) => state.pizza.cheeses
 export const selectVeggies        = (state) => state.pizza.veggies
-export const selectPizzaLoading   = (state) => state.pizza.loading
-export const selectPizzaError     = (state) => state.pizza.error
 
 export default pizzaSlice.reducer

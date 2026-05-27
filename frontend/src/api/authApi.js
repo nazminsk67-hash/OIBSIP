@@ -21,4 +21,14 @@ export const authApi = {
 
   getMe: () =>
     api.get('/auth/me'),
+  updateProfile: (data) =>
+    api.patch('/auth/me', data),
+  changePassword: (currentPassword, newPassword) =>
+    api.post('/auth/me/password', { currentPassword, newPassword }),
+  getFavorites: () =>
+    api.get('/auth/favorites'),
+  addFavorite: (pizzaId) =>
+    api.post(`/auth/favorites/${pizzaId}`),
+  removeFavorite: (pizzaId) =>
+    api.delete(`/auth/favorites/${pizzaId}`),
 }

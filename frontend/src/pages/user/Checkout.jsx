@@ -6,11 +6,24 @@ import { clearItems } from '../../redux/cartSlice'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector'
+import { orderApi } from '../../api/orderApi'
+import { selectCurrentUser } from '../../redux/authSlice'
+
+const loadScript = (src) =>
+  new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve()
+    const script = document.createElement('script')
+    script.src = src
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Razorpay SDK failed to load'))
+    document.body.appendChild(script)
+  })
 
 export default function Checkout() {
   const items = useSelector((state) => state.cart.items)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const currentUser = useSelector(selectCurrentUser)
   const [address, setAddress] = useState('')
   const [phone, setPhone] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cash')
@@ -48,16 +61,60 @@ export default function Checkout() {
 
     setLoading(true)
     try {
-      await dispatch(placeOrder(orderPayload)).unwrap()
-      dispatch(clearItems())
-      toast.success('🍕 Order placed successfully! Check your order status for live updates.')
-      navigate('/my-orders')
+      if (paymentMethod === 'online') {
+        // Create Razorpay order on server (amount in paise)
+        const amountPaise = Math.round(total * 100)
+        const { data } = await orderApi.createRazorpayOrder(amountPaise)
+
+        // Load Razorpay SDK
+        await loadScript('https://checkout.razorpay.com/v1/checkout.js')
+
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY || '',
+          amount: data.amount || amountPaise,
+          currency: data.currency || 'INR',
+          name: 'Pizza Delivery',
+          description: 'Order payment',
+          order_id: data.orderId,
+          handler: async (resp) => {
+            try {
+              // On success, place order including Razorpay identifiers
+              await dispatch(
+                placeOrder({ ...orderPayload, razorpayOrderId: data.orderId, razorpayPaymentId: resp.razorpay_payment_id })
+              ).unwrap()
+              dispatch(clearItems())
+              toast.success('🍕 Payment successful and order placed!')
+              navigate('/my-orders')
+            } catch (err) {
+              const msg = err || 'Unable to complete order after payment.'
+              setErrorMessage(msg)
+              toast.error(msg)
+            }
+          },
+          modal: { ondismiss: () => setLoading(false) },
+          prefill: {
+            name: currentUser?.name,
+            email: currentUser?.email,
+          },
+        }
+
+        const rzp = new window.Razorpay(options)
+        rzp.open()
+      } else {
+        // Cash on delivery (existing flow)
+        await dispatch(placeOrder(orderPayload)).unwrap()
+        dispatch(clearItems())
+        toast.success('🍕 Order placed successfully! Check your order status for live updates.')
+        navigate('/my-orders')
+      }
     } catch (err) {
-      const errorMsg = err || 'Order failed. Please try again.'
+      const errorMsg = err.response?.data?.message || err.message || 'Order failed. Please try again.'
       setErrorMessage(errorMsg)
       toast.error(errorMsg)
-    } finally {
       setLoading(false)
+    } finally {
+      // For online payments loading is managed by modal handlers
+      if (paymentMethod !== 'online') setLoading(false)
     }
   }
 

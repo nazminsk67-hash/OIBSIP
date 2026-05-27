@@ -7,6 +7,7 @@ import { initSocket } from './utils/socket.js'
 import authRoutes     from './routes/auth.js'
 import pizzaRoutes    from './routes/pizza.js'
 import orderRoutes    from './routes/orders.js'
+import usersRoutes    from './routes/users.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 
 // ── Connect to MongoDB ───────────────────────────────────────────
@@ -23,6 +24,8 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
+      'http://localhost:5174',
+      'http://localhost:5175',
       'https://oibsip-frontend.vercel.app',
     ],
     credentials: true,
@@ -34,6 +37,7 @@ app.use(express.json())
 app.use('/api/auth',   authRoutes)
 app.use('/api/pizza',  pizzaRoutes)
 app.use('/api/orders', orderRoutes)
+app.use('/api/users',  usersRoutes)
 
 // ── Health check ─────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }))

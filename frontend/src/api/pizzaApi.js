@@ -14,6 +14,8 @@ export const pizzaApi = {
     api.get(`/pizza/${id}`),
   getByCategory: (cat) =>
     api.get(`/pizza/category/${cat}`),
+  getAllAdminPizzas: () =>
+    api.get('/pizza/admin/all'),
   createPizza: (data) =>
     api.post('/pizza/admin', data),
   updatePizza: (id, data) =>

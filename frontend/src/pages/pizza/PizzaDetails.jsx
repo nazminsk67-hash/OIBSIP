@@ -2,14 +2,18 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { pizzaApi } from '../../api/pizzaApi'
 import { formatPrice } from '../../utils/helpers'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { addItem } from '../../redux/cartSlice'
+import { addFavorite, removeFavorite, selectFavorites } from '../../redux/favoritesSlice'
+import FavoriteButton from '../../components/common/FavoriteButton'
 import Loader from '../../components/common/Loader'
+import ImageWithFallback from '../../components/common/ImageWithFallback'
 
 export default function PizzaDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  const favorites = useSelector(selectFavorites)
   const [pizza, setPizza] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -36,12 +40,13 @@ export default function PizzaDetails() {
       .finally(() => setLoading(false))
   }, [id])
 
+  const isFavorite = pizza && favorites.some((item) => item._id === pizza._id)
   const imageSrc = pizza?.image || pizza?.imageUrl || pizza?.photo
   const selectedSizeObj = useMemo(() => {
     if (pizza?.sizes?.length) {
       return pizza.sizes.find((s) => s.name === size) || pizza.sizes[0]
     }
-    return { name: size || 'Regular', price: pizza?.price || 0 }
+    return { name: size || 'Regular', price: (pizza?.basePrice ?? pizza?.price) || 0 }
   }, [pizza, size])
 
   const toppingsList = pizza?.toppings || []
@@ -50,15 +55,22 @@ export default function PizzaDetails() {
   const totalPrice = unitPrice * Math.max(1, quantity)
 
   const toggleTopping = (topping) => {
-    const exists = toppings.some((item) => item.ingredientId === topping.ingredientId)
+    const exists = toppings.some(
+      (item) => item.ingredientId === topping.ingredientId && item.name === topping.name
+    )
     if (exists) {
-      setToppings(toppings.filter((item) => item.ingredientId !== topping.ingredientId))
+      setToppings(
+        toppings.filter(
+          (item) => item.ingredientId !== topping.ingredientId || item.name !== topping.name
+        )
+      )
     } else {
       setToppings([...toppings, topping])
     }
   }
 
   const handleAdd = () => {
+    if (!pizza) return
     dispatch(
       addItem({
         pizzaId: pizza._id,
@@ -70,6 +82,15 @@ export default function PizzaDetails() {
       })
     )
     navigate('/cart')
+  }
+
+  const handleFavorite = () => {
+    if (!pizza) return
+    if (isFavorite) {
+      dispatch(removeFavorite(pizza._id))
+    } else {
+      dispatch(addFavorite(pizza._id))
+    }
   }
 
   if (loading) return <Loader fullScreen />
@@ -100,27 +121,20 @@ export default function PizzaDetails() {
       <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] items-start">
         <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <div className="overflow-hidden rounded-[1.75rem] bg-slate-100">
-            {imageSrc ? (
-              <img
-                src={imageSrc}
-                alt={pizza.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-72 items-center justify-center text-8xl text-orange-500">
-                🍕
-              </div>
-            )}
+            <ImageWithFallback src={imageSrc} alt={pizza.name} className="min-h-[18rem]" />
           </div>
 
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700">
-                {pizza.category || 'Classic'}
-              </span>
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                {pizza.sizes?.length ? pizza.sizes.length + ' sizes available' : 'Single size'}
-              </span>
+            <div className="flex flex-wrap items-center gap-3 justify-between">
+              <div className="flex flex-wrap gap-3">
+                <span className="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary-700">
+                  {pizza.category || 'Classic'}
+                </span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                  {pizza.sizes?.length ? pizza.sizes.length + ' sizes available' : 'Single size'}
+                </span>
+              </div>
+              <FavoriteButton pizza={pizza} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-primary-500 hover:text-primary-700" />
             </div>
 
             <div>
@@ -151,7 +165,7 @@ export default function PizzaDetails() {
                   ))
                 ) : (
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-                    {formatPrice(pizza.price || 0)}
+                    {formatPrice((pizza.basePrice ?? pizza.price) || 0)}
                   </div>
                 )}
               </div>
@@ -162,10 +176,12 @@ export default function PizzaDetails() {
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {toppingsList.length ? (
                   toppingsList.map((option) => {
-                    const active = toppings.some((item) => item.ingredientId === option.ingredientId)
+                    const active = toppings.some(
+                      (item) => item.ingredientId === option.ingredientId && item.name === option.name
+                    )
                     return (
                       <button
-                        key={option.ingredientId}
+                        key={`${option.name}-${option.extraPrice}`}
                         type="button"
                         onClick={() => toggleTopping(option)}
                         className={`rounded-2xl border px-4 py-3 text-left text-sm transition ${

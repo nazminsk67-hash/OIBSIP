@@ -28,6 +28,13 @@ export const getPizzasByCategory = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+export const getAllPizzasAdmin = async (_req, res, next) => {
+  try {
+    const pizzas = await Pizza.find().sort({ createdAt: -1 })
+    res.json(pizzas)
+  } catch (err) { next(err) }
+}
+
 // ── POST /api/pizza  (admin) – create pizza ───────────────────
 export const createPizza = async (req, res, next) => {
   try {

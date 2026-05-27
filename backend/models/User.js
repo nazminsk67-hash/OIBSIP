@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       default: 'user',
     },
 
+    favorites: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Pizza' },
+    ],
+
     // ── Email verification ──────────────────────────────────────
     isEmailVerified: { type: Boolean, default: false },
     emailVerificationToken:   { type: String, select: false },

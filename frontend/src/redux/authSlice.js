@@ -47,10 +47,15 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null
     },
+    setUser: (state, action) => {
+      state.user = action.payload
+      state.isAdmin = action.payload?.role === 'admin'
+      localStorage.setItem('user', JSON.stringify(action.payload))
+    },
   },
 })
 
-export const { setCredentials, logout, setLoading, setError, clearError } = authSlice.actions
+export const { setCredentials, logout, setLoading, setError, clearError, setUser } = authSlice.actions
 
 // Selectors
 export const selectCurrentUser    = (state) => state.auth.user
@@ -59,5 +64,6 @@ export const selectIsAuthenticated = (state) => state.auth.isAuthenticated
 export const selectIsAdmin        = (state) => state.auth.isAdmin
 export const selectAuthLoading    = (state) => state.auth.loading
 export const selectAuthError      = (state) => state.auth.error
+export const selectAuthUser       = (state) => state.auth.user
 
 export default authSlice.reducer

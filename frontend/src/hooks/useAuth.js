@@ -12,6 +12,7 @@ import {
   setError,
   logout,
 } from '../redux/authSlice'
+import { fetchFavorites } from '../redux/favoritesSlice'
 import { authApi } from '../api/authApi'
 
 export const useAuth = () => {
@@ -29,6 +30,8 @@ export const useAuth = () => {
       dispatch(setLoading(true))
       const { data } = await authApi.login(credentials)
       dispatch(setCredentials(data))
+      // Load user favorites after successful login
+      if (data?.user?.role !== 'admin') dispatch(fetchFavorites())
       toast.success(`Welcome back, ${data.user.name}!`)
       navigate('/dashboard')
     } catch (err) {

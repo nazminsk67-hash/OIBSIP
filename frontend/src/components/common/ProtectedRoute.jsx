@@ -1,17 +1,27 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { selectIsAuthenticated, selectIsAdmin } from '../../redux/authSlice'
+import {
+  selectIsAuthenticated,
+  selectIsAdmin,
+  selectAuthLoading,
+} from '../../redux/authSlice'
 import Loader from './Loader'
 
-// Usage:
-// <ProtectedRoute />                 → requires login
-// <ProtectedRoute adminOnly />       → requires admin role
 export default function ProtectedRoute({ adminOnly = false }) {
   const isAuthenticated = useSelector(selectIsAuthenticated)
-  const isAdmin         = useSelector(selectIsAdmin)
-  const location        = useLocation()
+  const isAdmin = useSelector(selectIsAdmin)
+  const loading = useSelector(selectAuthLoading)
+  const location = useLocation()
 
-  if (!isAuthenticated) {
+  // Prevent redirect during auth restoration/loading
+  if (loading) {
+    return <Loader />
+  }
+
+  // Double-check localStorage fallback
+  const token = localStorage.getItem('token')
+
+  if (!isAuthenticated && !token) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 

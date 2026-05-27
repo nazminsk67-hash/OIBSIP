@@ -33,13 +33,15 @@ export default function Navbar() {
               {!isAdmin && (
                 <>
                   <Link to="/dashboard"  className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Menu</Link>
-                  <Link to="/build"      className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Build Pizza</Link>
+                  <Link to="/favorites" className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Favorites</Link>
+                  <Link to="/profile"    className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Profile</Link>
                   <Link to="/my-orders"  className="text-sm text-gray-600 hover:text-primary-500 transition-colors">My Orders</Link>
                 </>
               )}
               {isAdmin && (
                 <>
                   <Link to="/admin/dashboard" className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Dashboard</Link>
+                  <Link to="/admin/pizzas"    className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Pizzas</Link>
                   <Link to="/admin/orders"    className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Orders</Link>
                   <Link to="/admin/inventory" className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Inventory</Link>
                 </>

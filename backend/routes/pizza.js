@@ -6,6 +6,7 @@ import {
   updateStock,
   getPizzaById,
   getPizzasByCategory,
+  getAllPizzasAdmin,
   createPizza,
   updatePizza,
   deletePizza,
@@ -21,7 +22,8 @@ router.get('/category/:category', getPizzasByCategory)
 router.get('/:id',                getPizzaById)
 
 // Admin-only routes
-router.get(  '/inventory',        protect, adminOnly, getInventory)
+router.get('/admin/all',          protect, adminOnly, getAllPizzasAdmin)
+router.get('/inventory',          protect, adminOnly, getInventory)
 router.patch('/inventory/:id',    protect, adminOnly, updateStock)
 router.post( '/admin',            protect, adminOnly, createPizza)
 router.put(  '/admin/:id',        protect, adminOnly, updatePizza)

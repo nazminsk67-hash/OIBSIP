@@ -12,8 +12,6 @@ const paymentMethods = [
     label: 'Online Payment',
     description: 'Secure online payment (Razorpay)',
     icon: '💳',
-    disabled: true,
-    note: 'Coming soon',
   },
 ]
 
@@ -65,7 +63,7 @@ export default function PaymentMethodSelector({ value, onChange }) {
 
       <div className="rounded-xl bg-blue-50 p-3 border border-blue-200">
         <p className="text-xs font-medium text-blue-900">
-          ℹ️ Your order details will be securely stored. Razorpay integration coming soon for convenient online payments.
+          ℹ️ Your order details will be securely stored. Online payments powered by Razorpay.
         </p>
       </div>
     </div>
