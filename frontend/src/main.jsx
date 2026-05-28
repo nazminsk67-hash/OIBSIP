@@ -9,6 +9,20 @@ import ErrorBoundary from './components/common/ErrorBoundary'
 import { ThemeProvider } from './context/ThemeContext'
 import './index.css'
 
+// Register service worker and handle PWA install prompt (safe, non-blocking)
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+
+  // Optional: capture install prompt for custom UI
+  window.deferredPrompt = null
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault()
+    window.deferredPrompt = e
+  })
+}
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>

@@ -1,4 +1,3 @@
-import React, { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchAllOrders,
@@ -8,7 +7,22 @@ import {
 } from '../../redux/orderSlice'
 import { fetchAdminPizzas, selectPizzas } from '../../redux/pizzaSlice'
 import { formatPrice } from '../../utils/helpers'
+import React, { useEffect, useMemo, useState } from 'react'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+// We'll lazily load recharts at runtime to reduce initial bundle size on first load
+// If recharts is already bundled by Vite-plugin, this falls back gracefully.
+// For safety, we also support runtime import.
+const useRecharts = () => {
+  const [lib, setLib] = useState(null)
+  useEffect(() => {
+    let mounted = true
+    import('recharts')
+      .then((m) => { if (mounted) setLib(m) })
+      .catch(() => {})
+    return () => { mounted = false }
+  }, [])
+  return lib
+}
 import Loader from '../../components/common/Loader'
 import { SkeletonStats, SkeletonChartPlaceholder, SkeletonListItem } from '../../components/common/SkeletonLoaders'
 
@@ -18,6 +32,7 @@ export default function AdminDashboard() {
   const pizzas = useSelector(selectPizzas)
   const loading = useSelector(selectOrderLoading)
   const error = useSelector(selectOrderError)
+  const recharts = useRecharts()
 
   useEffect(() => {
     dispatch(fetchAllOrders())
@@ -154,15 +169,19 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={stats.daily} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="date" tickLine={false} axisLine={false} />
-                    <YAxis tickLine={false} axisLine={false} />
-                    <Tooltip formatter={(value) => [value, 'Orders']} />
-                    <Area type="monotone" dataKey="orders" stroke="#f97316" fill="#fed7aa" fillOpacity={0.45} />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {recharts ? (
+                  <recharts.ResponsiveContainer width="100%" height="100%">
+                    <recharts.AreaChart data={stats.daily} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <recharts.CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <recharts.XAxis dataKey="date" tickLine={false} axisLine={false} />
+                      <recharts.YAxis tickLine={false} axisLine={false} />
+                      <recharts.Tooltip formatter={(value) => [value, 'Orders']} />
+                      <recharts.Area type="monotone" dataKey="orders" stroke="#f97316" fill="#fed7aa" fillOpacity={0.45} />
+                    </recharts.AreaChart>
+                  </recharts.ResponsiveContainer>
+                ) : (
+                  <div className="flex h-full items-center justify-center text-slate-500">Loading charts...</div>
+                )}
               </div>
             </section>
 
@@ -174,31 +193,33 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="h-72">
-                {stats.statusData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                      <Pie
-                        data={stats.statusData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name} (${value})`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        <Cell fill="#10b981" />
-                        <Cell fill="#f97316" />
-                        <Cell fill="#6366f1" />
-                        <Cell fill="#64748b" />
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                {recharts ? (
+                  stats.statusData.length > 0 ? (
+                    <recharts.ResponsiveContainer width="100%" height="100%">
+                      <recharts.PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                        <recharts.Pie
+                          data={stats.statusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name} (${value})`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          <recharts.Cell fill="#10b981" />
+                          <recharts.Cell fill="#f97316" />
+                          <recharts.Cell fill="#6366f1" />
+                          <recharts.Cell fill="#64748b" />
+                        </recharts.Pie>
+                        <recharts.Tooltip />
+                      </recharts.PieChart>
+                    </recharts.ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-slate-500">No order data yet</div>
+                  )
                 ) : (
-                  <div className="flex h-full items-center justify-center text-slate-500">
-                    No order data yet
-                  </div>
+                  <div className="flex h-full items-center justify-center text-slate-500">Loading charts...</div>
                 )}
               </div>
             </section>

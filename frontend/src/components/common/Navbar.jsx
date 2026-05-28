@@ -11,7 +11,7 @@ export default function Navbar() {
   const { logout }      = useAuth()
 
   return (
-    <nav className="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <nav role="navigation" aria-label="Main navigation" className="bg-white border-b border-gray-100 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
@@ -41,10 +41,10 @@ export default function Navbar() {
               )}
               {isAdmin && (
                 <>
-                  <Link to="/admin/dashboard" className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Dashboard</Link>
-                  <Link to="/admin/pizzas"    className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Pizzas</Link>
-                  <Link to="/admin/orders"    className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Orders</Link>
-                  <Link to="/admin/inventory" className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Inventory</Link>
+                  <Link to="/admin/dashboard" onMouseEnter={() => import('../../pages/admin/AdminDashboard')} className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Dashboard</Link>
+                  <Link to="/admin/pizzas"    onMouseEnter={() => import('../../pages/admin/AdminPizzas')} className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Pizzas</Link>
+                  <Link to="/admin/orders"    onMouseEnter={() => import('../../pages/admin/Orders')} className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Orders</Link>
+                  <Link to="/admin/inventory" onMouseEnter={() => import('../../pages/admin/Inventory')} className="text-sm text-gray-600 hover:text-primary-500 transition-colors">Inventory</Link>
                 </>
               )}
 
@@ -63,6 +63,7 @@ export default function Navbar() {
                 </div>
                 <button
                   onClick={logout}
+                  aria-label="Logout"
                   className="text-sm text-gray-500 hover:text-red-500 transition-colors"
                 >
                   Logout
