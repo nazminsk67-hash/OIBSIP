@@ -19,7 +19,6 @@ const router = Router()
 router.get('/',                   getAllPizzas)
 router.get('/builder-options',    getBuilderOptions)
 router.get('/category/:category', getPizzasByCategory)
-router.get('/:id',                getPizzaById)
 
 // Admin-only routes
 router.get('/admin/all',          protect, adminOnly, getAllPizzasAdmin)
@@ -28,5 +27,7 @@ router.patch('/inventory/:id',    protect, adminOnly, updateStock)
 router.post( '/admin',            protect, adminOnly, createPizza)
 router.put(  '/admin/:id',        protect, adminOnly, updatePizza)
 router.delete('/admin/:id',       protect, adminOnly, deletePizza)
+
+router.get('/:id',                getPizzaById)
 
 export default router
