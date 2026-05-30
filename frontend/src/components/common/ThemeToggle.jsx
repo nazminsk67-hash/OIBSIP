@@ -10,7 +10,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setIsDark(!isDark)}
-      className="rounded-full border border-slate-200 bg-white p-2 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      className="theme-toggle"
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? (

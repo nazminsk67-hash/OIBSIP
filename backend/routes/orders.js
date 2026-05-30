@@ -18,12 +18,14 @@ router.use(protect)
 router.post('/create-payment',  createRazorpayOrder)
 router.post('/place',           placeOrder)
 router.get( '/my-orders',       getMyOrders)
-router.get( '/:id',             getOrderById)
 
-// Admin-only routes
-router.get(   '/',                 adminOnly, getAllOrders)
+// Admin-only routes MUST come before generic :id route
 router.get(   '/admin/all',        adminOnly, getAllOrders)
 router.put(   '/admin/:id/status', adminOnly, updateOrderStatus)
-router.patch( '/:id/status',       adminOnly, updateOrderStatus)
+router.patch( '/admin/:id/status', adminOnly, updateOrderStatus)
+
+// Generic routes come last (match :id parameter)
+router.get( '/:id',             getOrderById)
+router.get( '/',                 adminOnly, getAllOrders)
 
 export default router

@@ -10,7 +10,7 @@ export function ThemeProvider({ children }) {
 
   // Initialize theme from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('theme-mode')
+    const saved = localStorage.getItem('theme') || localStorage.getItem('theme-mode')
     const prefersLightMode = window.matchMedia('(prefers-color-scheme: light)').matches
 
     if (saved) {
@@ -24,10 +24,10 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme-mode', 'dark')
+      localStorage.setItem('theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme-mode', 'light')
+      localStorage.setItem('theme', 'light')
     }
   }, [isDark])
 

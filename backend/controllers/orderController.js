@@ -5,6 +5,7 @@ import Ingredient from '../models/Ingredient.js'
 import { ORDER_STATUS } from '../models/Order.js'
 import { emitOrderStatusUpdate } from '../utils/socket.js'
 import { sendLowStockAlert }     from '../utils/email.js'
+import { recordAudit }          from '../services/AuditLogService.js'
 
 // ── Lazy-load Razorpay to prevent errors if credentials are missing ─
 let razorpayInstance = null
@@ -162,26 +163,34 @@ export const placeOrder = async (req, res, next) => {
 export const getMyOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 })
-    res.json(orders)
-  } catch (err) { next(err) }
+    res.json({ success: true, orders: orders || [], count: orders.length })
+  } catch (err) {
+    console.error('getMyOrders error:', err.message)
+    res.status(500).json({ success: false, message: err.message || 'Failed to fetch your orders' })
+  }
 }
 
 // ── GET /api/orders/:id ───────────────────────────────────────────
 export const getOrderById = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id).populate('user', 'name email')
-    if (!order) return res.status(404).json({ message: 'Order not found' })
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
 
     // Non-admins can only view their own orders
     if (
       req.user.role !== 'admin' &&
       order.user._id.toString() !== req.user._id.toString()
     ) {
-      return res.status(403).json({ message: 'Access denied' })
+      return res.status(403).json({ success: false, message: 'Access denied' })
     }
 
-    res.json(order)
-  } catch (err) { next(err) }
+    res.json({ success: true, order })
+  } catch (err) {
+    console.error('getOrderById error:', err.message)
+    res.status(500).json({ success: false, message: err.message || 'Failed to fetch order' })
+  }
 }
 
 // ── GET /api/orders  (admin) ──────────────────────────────────────
@@ -190,8 +199,19 @@ export const getAllOrders = async (_req, res, next) => {
     const orders = await Order.find()
       .populate('user', 'name email')
       .sort({ createdAt: -1 })
-    res.json(orders)
-  } catch (err) { next(err) }
+    
+    res.json({
+      success: true,
+      orders: orders || [],
+      count: orders.length,
+    })
+  } catch (err) {
+    console.error('getAllOrders error:', err.message)
+    res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to fetch orders',
+    })
+  }
 }
 
 // ── PATCH /api/orders/:id/status  (admin) ────────────────────────
@@ -199,7 +219,7 @@ export const updateOrderStatus = async (req, res, next) => {
   try {
     const { status } = req.body
     if (!Object.values(ORDER_STATUS).includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' })
+      return res.status(400).json({ success: false, message: 'Invalid status value' })
     }
 
     const order = await Order.findByIdAndUpdate(
@@ -208,11 +228,24 @@ export const updateOrderStatus = async (req, res, next) => {
       { new: true }
     ).populate('user', 'name email')
 
-    if (!order) return res.status(404).json({ message: 'Order not found' })
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' })
+    }
 
     // Emit real-time update to the order owner via socket
     emitOrderStatusUpdate(order.user._id, order._id.toString(), status)
 
-    res.json(order)
-  } catch (err) { next(err) }
+    await recordAudit({
+      adminId: req.user._id,
+      action: 'Order status changed',
+      entityType: 'Order',
+      entityId: order._id.toString(),
+      details: { status },
+    })
+
+    res.json({ success: true, order })
+  } catch (err) {
+    console.error('updateOrderStatus error:', err.message)
+    res.status(500).json({ success: false, message: err.message || 'Failed to update order status' })
+  }
 }

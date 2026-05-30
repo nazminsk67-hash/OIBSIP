@@ -13,7 +13,10 @@ export const fetchMyOrders = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await orderApi.getMyOrders()
-      return response.data
+      const data = response.data
+      // Handle both old format (array) and new format (object with success)
+      const orders = Array.isArray(data) ? data : (data?.orders || [])
+      return orders
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
     }
@@ -37,7 +40,10 @@ export const fetchAllOrders = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const response = await orderApi.getAllOrders()
-      return response.data
+      const data = response.data
+      // Handle both old format (array) and new format (object with success)
+      const orders = Array.isArray(data) ? data : (data?.orders || [])
+      return orders
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
     }
@@ -49,7 +55,10 @@ export const updateOrderStatusAsync = createAsyncThunk(
   async ({ id, status }, thunkAPI) => {
     try {
       const response = await orderApi.updateOrderStatus(id, status)
-      return response.data
+      const data = response.data
+      // Handle both old format (object) and new format (object with success)
+      const order = data?.order || data
+      return order
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || error.message)
     }

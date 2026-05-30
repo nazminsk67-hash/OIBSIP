@@ -25,9 +25,17 @@ const PizzaDetails = lazy(() => import('./pages/pizza/PizzaDetails'))
 
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
+const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
 const AdminPizzas = lazy(() => import('./pages/admin/AdminPizzas'))
 const Inventory = lazy(() => import('./pages/admin/Inventory'))
 const Orders = lazy(() => import('./pages/admin/Orders'))
+const AdminOrderCenter = lazy(() => import('./pages/admin/AdminOrderCenter'))
+const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'))
+const AdminDelivery = lazy(() => import('./pages/admin/AdminDelivery'))
+const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs'))
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'))
+const SystemHealth = lazy(() => import('./pages/admin/SystemHealth'))
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'))
 const AdminLayout = lazy(() => import('./components/layout/AdminLayout'))
 const Profile = lazy(() => import('./pages/user/Profile'))
 const Favorites = lazy(() => import('./pages/user/Favorites'))
@@ -82,10 +90,18 @@ export default function App() {
       <Route element={<ProtectedRoute adminOnly />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="pizzas" element={<AdminPizzas />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="order-center" element={<AdminOrderCenter />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="delivery" element={<AdminDelivery />} />
+          <Route path="audit-logs" element={<AdminAuditLogs />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="profile" element={<AdminProfile />} />
+          <Route path="system-health" element={<SystemHealth />} />
         </Route>
       </Route>
 

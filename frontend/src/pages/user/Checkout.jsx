@@ -120,15 +120,15 @@ export default function Checkout() {
 
   if (!items.length) {
     return (
-      <div className="p-6 min-h-[60vh] flex items-center justify-center">
-        <div className="mx-auto max-w-2xl rounded-[2rem] border border-dashed border-slate-300 bg-slate-50 p-10 text-center shadow-sm">
-          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Checkout unavailable</p>
-          <h2 className="mt-4 text-3xl font-semibold text-slate-900">Your cart is empty</h2>
-          <p className="mt-3 text-slate-600">Add items to your cart before placing an order.</p>
+      <div className="p-6 min-h-[60vh] flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-dashed p-10 text-center" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="text-sm uppercase tracking-[0.2em]" style={{ color: 'var(--text-tertiary)' }}>Checkout unavailable</p>
+          <h2 className="mt-4 text-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>Your cart is empty</h2>
+          <p className="mt-3" style={{ color: 'var(--text-tertiary)' }}>Add items to your cart before placing an order.</p>
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="mt-8 rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-primary-700"
+            className="mt-8 btn-primary px-6 py-3 text-sm font-semibold"
           >
             Browse pizzas
           </button>
@@ -138,51 +138,57 @@ export default function Checkout() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm uppercase tracking-[0.2em] text-slate-500">Secure checkout</p>
-          <h2 className="mt-2 text-3xl font-semibold text-slate-900">Review your order</h2>
+          <p className="text-sm uppercase tracking-[0.2em]" style={{ color: 'var(--accent-primary)' }}>Secure checkout</p>
+          <h2 className="mt-2 text-3xl font-semibold" style={{ color: 'var(--text-primary)' }}>Review your order</h2>
         </div>
-        <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700">
+        <div className="rounded-full px-4 py-2 text-sm font-medium" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
           {items.length} {items.length === 1 ? 'item' : 'items'} in cart
         </div>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[1.4fr_0.75fr]">
-        <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="space-y-6 rounded-[2rem] border p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
           <div>
-            <h3 className="text-xl font-semibold text-slate-900">Delivery details</h3>
-            <p className="mt-2 text-slate-600">Fill in your address and phone number to complete the order.</p>
+            <h3 className="text-xl font-semibold" style={{ color: 'var(--text-primary)' }}>Delivery details</h3>
+            <p className="mt-2" style={{ color: 'var(--text-tertiary)' }}>Fill in your address and phone number to complete the order.</p>
           </div>
 
           <div className="grid gap-5">
             <label className="block">
-              <span className="text-sm font-medium text-slate-900">Delivery address *</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Delivery address *</span>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="Enter your complete delivery address..."
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-300"
+                aria-label="Delivery address"
+                required
+                className="mt-2 w-full rounded-xl border p-3 text-sm outline-none transition"
+                style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', '--tw-ring-color': 'var(--accent-primary)' }}
                 rows={3}
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-medium text-slate-900">Phone number *</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>Phone number *</span>
               <input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g., +91 98765 43210"
                 type="tel"
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:bg-white focus:ring-1 focus:ring-primary-300"
+                aria-label="Phone number"
+                required
+                className="mt-2 w-full rounded-xl border p-3 text-sm outline-none transition"
+                style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-color)', color: 'var(--text-primary)', '--tw-ring-color': 'var(--accent-primary)' }}
               />
             </label>
 
             <PaymentMethodSelector value={paymentMethod} onChange={setPaymentMethod} />
 
             {errorMessage && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <div className="rounded-xl border p-4 text-sm" style={{ backgroundColor: 'var(--danger-light)', borderColor: 'var(--danger-color)', color: 'var(--danger-dark)' }} role="alert">
                 <p className="font-semibold">Error:</p>
                 <p className="mt-1">{errorMessage}</p>
               </div>
@@ -192,11 +198,12 @@ export default function Checkout() {
               type="button"
               onClick={handlePlaceOrder}
               disabled={loading}
-              className="w-full rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-3 text-base font-semibold text-white transition hover:from-primary-700 hover:to-primary-800 disabled:cursor-not-allowed disabled:opacity-70 disabled:grayscale"
+              aria-busy={loading}
+              className="btn-primary w-full px-6 py-3 text-base font-semibold transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   Placing order...
                 </span>
               ) : (
@@ -206,42 +213,42 @@ export default function Checkout() {
           </div>
         </div>
 
-        <aside className="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm h-fit sticky top-6">
+        <aside className="rounded-[2rem] border p-6 h-fit sticky top-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="space-y-5">
             <div>
-              <p className="text-sm uppercase tracking-[0.18em] text-slate-500">Order summary</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">Your cart</h3>
+              <p className="text-sm uppercase tracking-[0.18em]" style={{ color: 'var(--text-tertiary)' }}>Order summary</p>
+              <h3 className="mt-2 text-2xl font-semibold" style={{ color: 'var(--text-primary)' }}>Your cart</h3>
             </div>
 
-            <div className="max-h-80 space-y-2 rounded-2xl bg-white p-4 overflow-y-auto shadow-sm">
+            <div className="max-h-80 space-y-2 rounded-2xl p-4 overflow-y-auto" style={{ backgroundColor: 'var(--bg-secondary)', boxShadow: 'var(--shadow-sm)' }}>
               {items.map((item) => (
-                <div key={item._key} className="flex items-start justify-between gap-3 pb-2 border-b border-slate-100 last:border-b-0">
+                <div key={item._key} className="flex items-start justify-between gap-3 pb-2 border-b last:border-b-0" style={{ borderColor: 'var(--border-color)' }}>
                   <div className="flex-1">
-                    <p className="font-semibold text-slate-900 text-sm">{item.name}</p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{item.name}</p>
+                    <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
                       {item.size} · Qty {item.quantity}
                     </p>
                   </div>
-                  <p className="font-semibold text-slate-900 text-sm whitespace-nowrap">{formatPrice(item.lineTotal)}</p>
+                  <p className="font-semibold text-sm whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>{formatPrice(item.lineTotal)}</p>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <div className="mb-4 pb-4 border-b border-slate-100">
-                <div className="flex items-center justify-between text-sm text-slate-600">
+            <div className="rounded-2xl p-4" style={{ backgroundColor: 'var(--bg-secondary)' }}>
+              <div className="mb-4 pb-4 border-b" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="flex items-center justify-between text-sm" style={{ color: 'var(--text-tertiary)' }}>
                   <span>Subtotal</span>
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <p className="font-semibold text-slate-900">Total</p>
-                <p className="text-2xl font-bold text-primary-600">{formatPrice(total)}</p>
+                <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>Total</p>
+                <p className="text-2xl font-bold" style={{ color: 'var(--accent-primary)' }}>{formatPrice(total)}</p>
               </div>
             </div>
 
-            <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3">
-              <p className="text-xs font-medium text-emerald-900">
+            <div className="rounded-2xl border p-3" style={{ backgroundColor: 'var(--success-light)', borderColor: 'var(--success-color)', color: 'var(--success-dark)' }}>
+              <p className="text-xs font-medium">
                 ✓ Your order details will be securely saved and you'll get live updates!
               </p>
             </div>

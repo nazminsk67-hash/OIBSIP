@@ -6,12 +6,15 @@ export default function Sidebar({ variant = 'admin', onClose }) {
 
   const adminLinks = [
     { to: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-    { to: '/admin/pizzas', label: 'Pizzas', icon: '🍕' },
-    { to: '/admin/orders', label: 'Orders', icon: '🧾' },
+    { to: '/admin/order-center', label: 'Order Center', icon: '🧾' },
+    { to: '/admin/customers', label: 'Customers', icon: '👥' },
+    { to: '/admin/delivery', label: 'Delivery', icon: '🚚' },
     { to: '/admin/inventory', label: 'Inventory', icon: '📦' },
     { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
-    { to: '/admin/dashboard', label: 'Notifications', icon: '🔔' },
-    { to: '/profile', label: 'Profile', icon: '👤' },
+    { to: '/admin/audit-logs', label: 'Audit Logs', icon: '📝' },
+    { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
+    { to: '/admin/system-health', label: 'Health', icon: '❤️' },
+    { to: '/admin/profile', label: 'Profile', icon: '👤' },
   ]
 
   const userLinks = [
@@ -27,28 +30,36 @@ export default function Sidebar({ variant = 'admin', onClose }) {
   const links = variant === 'admin' ? adminLinks : userLinks
 
   return (
-    <aside className="w-64 bg-white border-r hidden md:flex flex-col">
-      <div className="h-16 flex items-center px-4 border-b">
+    <aside className="w-64 flex flex-col sidebar hidden md:flex">
+      <div className="sidebar-header">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🍕</span>
-          <div className="font-bold">PizzaHub</div>
+          <div className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>PizzaHub</div>
         </div>
       </div>
-      <nav className="p-3 space-y-1 flex-1 overflow-auto">
+      <nav className="sidebar-nav">
         {links.map((l) => (
           <SidebarItem key={l.to} to={l.to} icon={l.icon} label={l.label} onClick={onClose} />
         ))}
       </nav>
-      <div className="p-3 border-t">
+      <div className="sidebar-footer">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">{user?.name?.[0]?.toUpperCase()}</div>
+          <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold" 
+               style={{ 
+                 backgroundColor: 'var(--accent-light)',
+                 color: 'var(--accent-primary)'
+               }}>
+            {user?.name?.[0]?.toUpperCase()}
+          </div>
           <div className="flex-1">
-            <div className="text-sm font-medium">{user?.name}</div>
-            <div className="text-xs text-gray-500">{user?.email}</div>
+            <div className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{user?.name}</div>
+            <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{user?.email}</div>
           </div>
         </div>
         <div className="mt-3">
-          <button onClick={logout} className="w-full text-left text-sm text-red-600">Logout</button>
+          <button onClick={logout} className="w-full text-left text-sm font-medium py-2 rounded-2xl btn-secondary text-left">
+            Logout
+          </button>
         </div>
       </div>
     </aside>

@@ -1,6 +1,7 @@
 import Pizza      from '../models/Pizza.js'
 import Ingredient from '../models/Ingredient.js'
 import { sendLowStockAlert } from '../utils/email.js'
+import { recordAudit } from '../services/AuditLogService.js'
 
 // ── GET /api/pizza  – all pizza varieties ──────────────────────────
 export const getAllPizzas = async (_req, res, next) => {
@@ -40,6 +41,13 @@ export const createPizza = async (req, res, next) => {
   try {
     const payload = req.body
     const pizza = await Pizza.create(payload)
+    await recordAudit({
+      adminId: req.user._id,
+      action: 'Pizza created',
+      entityType: 'Pizza',
+      entityId: pizza._id.toString(),
+      details: { name: pizza.name },
+    })
     res.status(201).json(pizza)
   } catch (err) { next(err) }
 }
@@ -49,6 +57,13 @@ export const updatePizza = async (req, res, next) => {
   try {
     const pizza = await Pizza.findByIdAndUpdate(req.params.id, req.body, { new: true })
     if (!pizza) return res.status(404).json({ message: 'Pizza not found' })
+    await recordAudit({
+      adminId: req.user._id,
+      action: 'Pizza updated',
+      entityType: 'Pizza',
+      entityId: pizza._id.toString(),
+      details: { updates: req.body },
+    })
     res.json(pizza)
   } catch (err) { next(err) }
 }
@@ -58,6 +73,13 @@ export const deletePizza = async (req, res, next) => {
   try {
     const pizza = await Pizza.findByIdAndDelete(req.params.id)
     if (!pizza) return res.status(404).json({ message: 'Pizza not found' })
+    await recordAudit({
+      adminId: req.user._id,
+      action: 'Pizza deleted',
+      entityType: 'Pizza',
+      entityId: pizza._id.toString(),
+      details: { name: pizza.name },
+    })
     res.json({ message: 'Pizza deleted' })
   } catch (err) { next(err) }
 }
@@ -95,12 +117,35 @@ export const updateStock = async (req, res, next) => {
       return res.status(404).json({ message: 'Ingredient not found' })
     }
 
-    if (stock           !== undefined) ingredient.stock          = stock
-    if (alertThreshold  !== undefined) ingredient.alertThreshold = alertThreshold
-    if (price           !== undefined) ingredient.price          = price
-    if (isAvailable     !== undefined) ingredient.isAvailable    = isAvailable
+    const changes = {}
+    if (stock           !== undefined) {
+      ingredient.stock = stock
+      changes.stock = stock
+    }
+    if (alertThreshold  !== undefined) {
+      ingredient.alertThreshold = alertThreshold
+      changes.alertThreshold = alertThreshold
+    }
+    if (price           !== undefined) {
+      ingredient.price = price
+      changes.price = price
+    }
+    if (isAvailable     !== undefined) {
+      ingredient.isAvailable = isAvailable
+      changes.isAvailable = isAvailable
+    }
 
     await ingredient.save()
+
+    if (Object.keys(changes).length) {
+      await recordAudit({
+        adminId: req.user._id,
+        action: 'Inventory changed',
+        entityType: 'Ingredient',
+        entityId: ingredient._id.toString(),
+        details: changes,
+      })
+    }
 
     // Fire low-stock alert email if threshold crossed
     if (ingredient.stock < ingredient.alertThreshold) {

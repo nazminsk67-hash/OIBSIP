@@ -32,39 +32,41 @@ export default function Login() {
   }
 
   return (
-    <div className="auth-wrapper relative">
+    <div className="auth-wrapper relative min-h-screen flex items-center justify-center px-4">
       <div className="absolute right-6 top-6">
         <ThemeToggle />
       </div>
-      <div className="auth-card">
+      <div className="auth-card w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <span className="text-5xl block mb-3">🍕</span>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign in to order your pizza</p>
+          <span className="text-5xl block mb-4">🍕</span>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Welcome back</h1>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-tertiary)' }}>Sign in to order your pizza</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="label">Email</label>
+            <label className="label" style={{ color: 'var(--text-primary)' }}>Email</label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
               placeholder="you@example.com"
+              aria-label="Email address"
               className={`input-field ${errors.email ? 'input-error' : ''}`}
             />
-            {errors.email && <p className="error-msg">{errors.email}</p>}
+            {errors.email && <p className="error-msg" role="alert">{errors.email}</p>}
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="label mb-0">Password</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="label mb-0" style={{ color: 'var(--text-primary)' }}>Password</label>
               <Link
                 to="/forgot-password"
-                className="text-xs text-primary-500 hover:text-primary-600"
+                className="text-xs transition-colors"
+                style={{ color: 'var(--accent-primary)' }}
               >
                 Forgot password?
               </Link>
@@ -75,33 +77,43 @@ export default function Login() {
               value={form.password}
               onChange={handleChange}
               placeholder="••••••••"
+              aria-label="Password"
               className={`input-field ${errors.password ? 'input-error' : ''}`}
             />
-            {errors.password && <p className="error-msg">{errors.password}</p>}
+            {errors.password && <p className="error-msg" role="alert">{errors.password}</p>}
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="btn-primary w-full mt-2"
+            aria-busy={loading}
+            className="btn-primary w-full mt-4"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
 
+        {/* Divider */}
+        <div className="flex items-center gap-3 my-6">
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }}></div>
+          <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>or</span>
+          <div className="flex-1 h-px" style={{ backgroundColor: 'var(--border-color)' }}></div>
+        </div>
+
         {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-6">
+        <p className="text-center text-sm" style={{ color: 'var(--text-tertiary)' }}>
           Don't have an account?{' '}
-          <Link to="/register" className="text-primary-500 hover:text-primary-600 font-medium">
+          <Link to="/register" className="font-medium transition-colors" style={{ color: 'var(--accent-primary)' }}>
             Create one
           </Link>
         </p>
 
         {/* Admin link */}
-        <div className="border-t border-gray-100 pt-4 mt-4 text-center">
+        <div className="mt-6 pt-6 border-t text-center" style={{ borderColor: 'var(--border-color)' }}>
           <Link
             to="/admin/login"
-            className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-xs transition-colors"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             Admin login →
           </Link>

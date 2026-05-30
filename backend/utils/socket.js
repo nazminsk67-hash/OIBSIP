@@ -4,9 +4,21 @@ import { verifySocketToken } from '../middleware/auth.js'
 let io
 
 export const initSocket = (httpServer) => {
+  const configuredClientUrls = process.env.CLIENT_URLS
+    ? process.env.CLIENT_URLS.split(',').map((url) => url.trim()).filter(Boolean)
+    : []
+  const socketOrigins = [...new Set([
+    process.env.CLIENT_URL,
+    ...configuredClientUrls,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'https://oibsip-frontend.vercel.app',
+  ].filter(Boolean))]
+
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: socketOrigins,
       methods: ['GET', 'POST'],
     },
   })

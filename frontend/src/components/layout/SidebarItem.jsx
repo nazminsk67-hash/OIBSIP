@@ -5,7 +5,7 @@ export default function SidebarItem({ to, icon, label, onClick }) {
     <NavLink
       to={to}
       onClick={onClick}
-      className={({ isActive }) => `flex items-center gap-3 px-4 py-2 rounded-md text-sm hover:bg-gray-100 ${isActive ? 'bg-gray-100 font-semibold' : 'text-gray-700'}`}>
+      className={({ isActive }) => `flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive ? 'sidebar-item-active' : 'sidebar-item'}`}>
       <span className="text-lg">{icon}</span>
       <span className="truncate">{label}</span>
     </NavLink>
