@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+
+    env:
+      MONGO_URI: mongodb://127.0.0.1:27017/pizza-delivery-test
+      JWT_SECRET: ci_test_jwt_secret
+      CLIENT_URL: http://localhost:5173
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backend tests
+        run: npm run test:ci --workspace=backend
+
+      - name: Frontend tests
+        run: npm run test:ci --workspace=frontend
+
+      - name: Build frontend
+        run: npm run build --workspace=frontend
+
+      - name: Validate backend startup
+        run: |
+          timeout 15s node backend/server.js &
+          sleep 5
+          curl -sf http://127.0.0.1:5000/api/health
+          curl -sf http://127.0.0.1:5000/api/health/metrics

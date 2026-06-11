@@ -1,0 +1,38 @@
+{
+  "name": "pizza-delivery-backend",
+  "version": "1.0.0",
+  "description": "Full-stack Pizza Delivery App – Node/Express/MongoDB backend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "seed": "node utils/seed.js",
+    "verify:smtp": "node scripts/verify-smtp.js",
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --config jest.config.cjs",
+    "test:ci": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --config jest.config.cjs --runInBand"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^6.8.0",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.4.0",
+    "nodemailer": "^8.0.7",
+    "razorpay": "^2.9.2",
+    "socket.io": "^4.7.5",
+    "winston": "^3.13.0",
+    "xss-clean": "^0.1.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.2",
+    "supertest": "^7.0.0"
+  }
+}
